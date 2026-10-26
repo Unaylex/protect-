@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DripStore · Sistema de Gestión</title>
+<style>
+:root{--p:#4f46e5;--bg:#f3f4f8;--tx:#1f2937;--ok:#16a34a;--err:#dc2626}*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--tx)}[hidden]{display:none!important}
+#login{min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#4f46e5,#9333ea);padding:16px}
+.card{background:#fff;border-radius:16px;padding:30px;width:100%;max-width:380px;box-shadow:0 20px 50px #0004;display:grid;gap:12px;animation:in .4s}
+@keyframes in{from{opacity:0;transform:translateY(12px)}}.card h1{font-size:1.3rem;text-align:center;margin:0}
+.meta{text-align:center;color:#6b7280;font-size:.85rem;margin:0}.logo{width:72px;height:72px;margin:auto;display:block}.logo.sm{width:34px;height:34px;margin:0}
+label{display:grid;gap:4px;font-size:.85rem;font-weight:600}input,select{padding:9px 10px;border:1px solid #d1d5db;border-radius:8px;font:inherit;width:100%}
+input:focus,select:focus{outline:2px solid var(--p);border-color:transparent}
+.btn{background:var(--p);color:#fff;border:0;border-radius:8px;padding:9px 14px;font:inherit;cursor:pointer;transition:.15s}.btn:hover{filter:brightness(1.1)}
+.btn:disabled{opacity:.5;cursor:wait}.btn.g{background:#e5e7eb;color:var(--tx)}.btn.r{background:var(--err)}.btn.s{padding:4px 9px;font-size:.8rem}
+.msg{margin:0;text-align:center;min-height:1.2em;color:var(--err);font-size:.9rem}
+#app{display:flex;min-height:100vh}#menu{width:230px;background:#1e1b4b;color:#fff;padding:14px;flex-shrink:0;transition:.2s}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:14px}
+#nav h4{margin:14px 0 4px;font-size:.7rem;text-transform:uppercase;color:#a5b4fc}
+#nav a{display:block;padding:8px 10px;border-radius:8px;color:#e0e7ff;cursor:pointer;font-size:.92rem}#nav a:hover,#nav a.on{background:#4338ca}
+main{flex:1;min-width:0;padding:16px}header{display:flex;align-items:center;gap:12px;margin-bottom:14px}header h2{margin:0;flex:1}#burger{display:none}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:end}.bar input,.bar select{width:auto;min-width:140px}.bar label{font-weight:500}
+.chk{display:flex!important;align-items:center;gap:6px;flex-direction:row}.chk input{width:auto;min-width:0!important}
+.wrap{overflow-x:auto;background:#fff;border-radius:12px;box-shadow:0 1px 4px #0002}table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid #eee;white-space:nowrap}th{background:#eef2ff;cursor:pointer;user-select:none}
+tr:hover td{background:#fafaff}td.acc{display:flex;gap:6px}.empty,.err{padding:24px;text-align:center;color:#6b7280}.err{color:var(--err)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.stat{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 4px #0002;animation:in .4s}
+.stat b{display:block;font-size:1.6rem;color:var(--p)}dialog{border:0;border-radius:14px;padding:22px;width:min(480px,94vw);box-shadow:0 20px 50px #0006}
+dialog::backdrop{background:#0006}dialog form{display:grid;gap:12px}dialog h3{margin:0}.row{display:flex;gap:8px;justify-content:flex-end}
+.linea{display:grid;grid-template-columns:1fr 70px auto;gap:6px;margin-bottom:6px}
+#toast{position:fixed;bottom:18px;right:18px;padding:12px 18px;border-radius:10px;color:#fff;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;z-index:9}
+#toast.show{opacity:1;transform:none}#toast.ok{background:var(--ok)}#toast.err{background:var(--err)}
+.spin{display:inline-block;width:16px;height:16px;border:3px solid #c7d2fe;border-top-color:var(--p);border-radius:50%;animation:r .7s linear infinite;vertical-align:middle}@keyframes r{to{transform:rotate(360deg)}}
+@media(max-width:760px){#menu{position:fixed;inset:0 auto 0 0;z-index:5;transform:translateX(-100%)}#menu.open{transform:none}#burger{display:block}}
+@media print{#menu,.bar,#burger,#quien,.acc,.noprint{display:none!important}main{padding:0}.wrap{box-shadow:none}}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><symbol id="lg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#4f46e5"/><path d="M22 14l-12 8 6 8 6-4v26h20V26l6 4 6-8-12-8c-2 5-6 7-10 7s-8-2-10-7z" fill="#fff"/></symbol></svg>
+<section id="login"><form id="lf" class="card"><svg class="logo"><use href="#lg"/></svg><h1>DripStore</h1><p class="meta">Sistema de Gestión para Tienda de Ropa</p>
+<p class="meta">Autor: José Hernández · 6to D.A.A.I.<br><span id="centro"></span></p>
+<label>Usuario<input id="usr" autocomplete="username" required></label><label>Clave<input id="pwd" type="password" autocomplete="current-password" required></label>
+<button class="btn" id="bl">Iniciar sesión</button><p id="lm" class="msg"></p></form></section>
+<div id="app" hidden><aside id="menu"><div class="brand"><svg class="logo sm"><use href="#lg"/></svg>DripStore</div><nav id="nav"></nav></aside>
+<main><header><button id="burger" class="btn g">☰</button><h2 id="tit"></h2><span id="quien"></span></header><div id="vista"></div></main></div>
+<dialog id="dlg"></dialog><div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MONEY=['precio','salario','total','subtotal','precioUnitario'];
+const fmt=(k,v)=>v==null||v===''?'—':MONEY.includes(k)?'RD$ '+Number(v).toLocaleString('es-DO',{minimumFractionDigits:2}):esc(v);
+const toast=(m,ok=true)=>{const t=$('#toast');t.textContent=m;t.className='show '+(ok?'ok':'err');clearTimeout(toast.h);toast.h=setTimeout(()=>t.className='',3500)};
+async function api(m,q,b){
+  const p=new URLSearchParams(Object.entries(q).filter(([,v])=>v!==''&&v!=null&&v!==false));let r;
+  try{r=await fetch('api.php?'+p,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined})}
+  catch{throw new Error('No se pudo conectar con el servidor. ¿Está Apache encendido?')}
+  const d=await r.json().catch(()=>({error:'Respuesta inválida: abre la página desde http://localhost/dripstore/ con Apache encendido.'}));
+  if(r.status===401&&!['login','estado'].includes(q.a))location.reload();
+  if(!r.ok)throw new Error(d.error||'Error en la solicitud.');return d}
+
+// ===== CLASES (cada una representa una tabla de la base de datos) =====
+class Entidad{
+  constructor(d={}){Object.assign(this,d)}
+  get id(){return this[this.constructor.pk]}
+  validar(){const e=[];for(const c of this.constructor.campos){const v=this[c.n];
+    if(c.r&&(v===''||v==null)){e.push(c.l+' es obligatorio.');continue}if(v===''||v==null)continue;
+    if(c.t==='number'&&(isNaN(v)||+v<0))e.push(c.l+' debe ser un número válido.');
+    if(c.n==='stock'&&!Number.isInteger(+v))e.push('Stock debe ser entero.');
+    if(c.t==='email'&&!/^\S+@\S+\.\S+$/.test(v))e.push('Correo inválido.')}return e}
+  datos(){return Object.fromEntries(this.constructor.campos.map(c=>[c.n,this[c.n]]))}
+  guardar(){const C=this.constructor;return this.id?api('PUT',{e:C.ruta,id:this.id},this.datos()):api('POST',{e:C.ruta},this.datos())} // INSERCIÓN / ACTUALIZACIÓN
+  eliminar(){return api('DELETE',{e:this.constructor.ruta,id:this.id})}
+  static async todos(p={}){return(await api('GET',{e:this.ruta,...p})).map(r=>new this(r))} // LECTURA
+  static async porId(id){return new this(await api('GET',{e:this.ruta,id}))}
+}
+const T=(n,l,r,t='text')=>({n,l,r,t}),S=(n,l,src,txt)=>({n,l,r:1,t:'select',src,txt});
+class Categoria extends Entidad{static ruta='categorias';static pk='idCategoria';
+  static campos=[T('nombre','Nombre',1),T('descripcion','Descripción')];
+  static cols=[['idCategoria','ID'],['nombre','Nombre'],['descripcion','Descripción'],['productos','Productos']];
+  contarProductos(){return Number(this.productos||0)}}
+class Proveedor extends Entidad{static ruta='proveedores';static pk='idProveedor';
+  static campos=[T('nombreEmpresa','Empresa',1),T('telefono','Teléfono',1,'tel'),T('correo','Correo',0,'email'),T('direccion','Dirección')];
+  static cols=[['idProveedor','ID'],['nombreEmpresa','Empresa'],['telefono','Teléfono'],['correo','Correo'],['direccion','Dirección'],['productos','Productos']];
+  tieneProductos(){return Number(this.productos||0)>0}}
+class Cliente extends Entidad{static ruta='clientes';static pk='idCliente';
+  static campos=[T('nombre','Nombre',1),T('apellido','Apellido',1),T('telefono','Teléfono',0,'tel'),T('correo','Correo',0,'email'),T('direccion','Dirección')];
+  static cols=[['idCliente','ID'],['nombre','Nombre'],['apellido','Apellido'],['telefono','Teléfono'],['correo','Correo'],['direccion','Dirección']];
+  nombreCompleto(){return this.nombre+' '+this.apellido}}
+class Empleado extends Entidad{static ruta='empleados';static pk='idEmpleado';
+  static campos=[T('nombre','Nombre',1),T('apellido','Apellido',1),T('cargo','Cargo',1),T('salario','Salario',1,'number'),T('fechaIngreso','Fecha de ingreso',1,'date')];
+  static cols=[['idEmpleado','ID'],['nombre','Nombre'],['apellido','Apellido'],['cargo','Cargo'],['salario','Salario'],['fechaIngreso','Ingreso']];
+  nombreCompleto(){return this.nombre+' '+this.apellido}
+  antiguedadEnAnios(){return Math.floor((Date.now()-new Date(this.fechaIngreso))/31557600000)}}
+class Producto extends Entidad{static ruta='productos';static pk='idProducto';
+  static campos=[T('nombre','Nombre',1),T('talla','Talla',1),T('color','Color',1),T('precio','Precio',1,'number'),T('stock','Stock',1,'number'),
+    S('idCategoria','Categoría','categorias','nombre'),S('idProveedor','Proveedor','proveedores','nombreEmpresa')];
+  static cols=[['idProducto','ID'],['nombre','Nombre'],['talla','Talla'],['color','Color'],['precio','Precio'],['stock','Stock'],['categoria','Categoría'],['proveedor','Proveedor']];
+  hayStock(c){return Number(this.stock)>=c}
+  estaBajoStock(){return Number(this.stock)<=10}}
+class DetalleVenta extends Entidad{static ruta='detalles';static pk='idDetalle';static campos=[];
+  static cols=[['idDetalle','ID'],['idVenta','Venta'],['fecha','Fecha'],['producto','Producto'],['cantidad','Cant.'],['precioUnitario','Precio unit.'],['subtotal','Subtotal']];
+  calcularSubtotal(){return +(Number(this.cantidad)*Number(this.precioUnitario)).toFixed(2)}}
+class Venta extends Entidad{static ruta='ventas';static pk='idVenta';
+  static campos=[S('idCliente','Cliente','clientes',c=>c.nombre+' '+c.apellido),S('idEmpleado','Empleado','empleados',c=>c.nombre+' '+c.apellido)];
+  static cols=[['idVenta','ID'],['fecha','Fecha'],['cliente','Cliente'],['empleado','Empleado'],['total','Total']];
+  constructor(d={}){super(d);this.lineas=d.lineas||[]}
+  agregarLinea(p,cant){if(!p.hayStock(cant))throw new Error(`Stock insuficiente de ${p.nombre} (disponible: ${p.stock}).`);
+    const l=new DetalleVenta({idProducto:p.idProducto,producto:p.nombre,cantidad:cant,precioUnitario:p.precio});l.subtotal=l.calcularSubtotal();this.lineas.push(l)}
+  calcularTotal(){return this.lineas.reduce((s,l)=>s+l.calcularSubtotal(),0)}
+  validar(){const e=super.validar();if(!this.id&&!this.lineas.length)e.push('Agregue al menos un producto.');return e}
+  guardar(){return this.id?super.guardar():api('POST',{e:'ventas'},{idCliente:this.idCliente,idEmpleado:this.idEmpleado,lineas:this.lineas.map(l=>({idProducto:l.idProducto,cantidad:l.cantidad}))})}}
+
+// ===== INTERFAZ =====
+const VIEWS=[{k:'inicio',g:'',t:'Inicio'},
+ {k:'productos',g:'Gestión',t:'Productos',c:Producto},{k:'clientes',g:'Gestión',t:'Clientes',c:Cliente},{k:'proveedores',g:'Gestión',t:'Proveedores',c:Proveedor},
+ {k:'empleados',g:'Gestión',t:'Empleados',c:Empleado},{k:'categorias',g:'Gestión',t:'Categorías',c:Categoria},{k:'ventas',g:'Gestión',t:'Ventas',c:Venta},
+ {k:'r-productos',g:'Reportes',t:'Productos',c:Producto,ro:1,fl:['categoria','bajo']},{k:'r-ventas',g:'Reportes',t:'Ventas',c:Venta,ro:1,fl:['fechas']},
+ {k:'r-detalles',g:'Reportes',t:'Detalle de ventas',c:DetalleVenta,ro:1},{k:'r-clientes',g:'Reportes',t:'Clientes',c:Cliente,ro:1},
+ {k:'r-empleados',g:'Reportes',t:'Empleados',c:Empleado,ro:1},{k:'r-proveedores',g:'Reportes',t:'Proveedores',c:Proveedor,ro:1}];
+let V=null,rows=[],sort={k:null,dir:'asc'},primera=false;
+async function init(){
+  if(location.protocol==='file:')$('#lm').textContent='Abre la página desde http://localhost/dripstore/ (no con doble clic).';
+  try{const s=await api('GET',{a:'estado'});$('#centro').textContent=s.centro;primera=!s.hay;
+    if(primera){$('#bl').textContent='Crear usuario y entrar';$('#lm').style.color='#4f46e5';$('#lm').textContent='Primera vez: crea tu usuario (clave de mínimo 8 caracteres).'}
+    s.u?entrar(s.u):0}catch(e){$('#lm').textContent=e.message}}
+$('#lf').onsubmit=async e=>{e.preventDefault();const b=$('#bl');b.disabled=true;
+  try{const r=await api('POST',{a:primera?'setup':'login'},{usuario:$('#usr').value,password:$('#pwd').value});entrar(r.u)}
+  catch(er){$('#lm').style.color='';$('#lm').textContent=er.message}finally{b.disabled=false}};
+function entrar(u){$('#login').hidden=true;$('#app').hidden=false;$('#quien').textContent='👤 '+u;let h='',g=null;
+  for(const v of VIEWS){if(v.g!==g){g=v.g;if(g)h+=`<h4>${g}</h4>`}h+=`<a data-k="${v.k}">${v.t}</a>`}
+  $('#nav').innerHTML=h+'<h4>Sesión</h4><a id="salir">Cerrar sesión</a>';
+  $('#nav').onclick=async e=>{const a=e.target.closest('a');if(!a)return;
+    if(a.id==='salir'){await api('POST',{a:'logout'}).catch(()=>{});location.reload()}else{abrir(a.dataset.k);$('#menu').classList.remove('open')}};abrir('inicio')}
+$('#burger').onclick=()=>$('#menu').classList.toggle('open');
+const deb=(f,ms)=>{let h;return()=>{clearTimeout(h);h=setTimeout(f,ms)}};
+function abrir(k){V=VIEWS.find(v=>v.k===k);sort={k:null,dir:'asc'};rows=[];
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.k===k));
+  $('#tit').textContent=(V.g==='Reportes'?'Reporte de ':'')+V.t;if(k==='inicio')return inicio();const f=V.fl||[];
+  $('#vista').innerHTML=`<div class="bar"><input id="q" placeholder="Buscar…">
+  ${f.includes('categoria')?'<select id="fcat"><option value="">Todas las categorías</option></select><label class="chk"><input type="checkbox" id="fbajo">Stock bajo</label>':''}
+  ${f.includes('fechas')?'<label>Desde<input type="date" id="fd"></label><label>Hasta<input type="date" id="fh"></label>':''}
+  <button class="btn g" id="bref">↻ Actualizar</button>${V.ro?'<button class="btn g" id="bcsv">CSV</button><button class="btn g" id="bprt">Imprimir</button>':'<button class="btn" id="bnew">+ Nuevo</button>'}</div><div class="wrap" id="tabla"></div>`;
+  $('#q').oninput=deb(cargar,300);$('#bref').onclick=cargar;['#fcat','#fbajo','#fd','#fh'].forEach(s=>$(s)&&($(s).onchange=cargar));
+  if($('#fcat'))Categoria.todos().then(cs=>cs.forEach(c=>$('#fcat').add(new Option(c.nombre,c.idCategoria)))).catch(()=>{});
+  if(V.ro){$('#bcsv').onclick=csv;$('#bprt').onclick=()=>print()}else $('#bnew').onclick=()=>formulario();cargar()}
+async function inicio(){$('#vista').innerHTML='<span class="spin"></span>';
+  try{const r=await api('GET',{a:'resumen'});$('#vista').innerHTML='<div class="stats">'+[['Productos',r.productos],['Clientes',r.clientes],['Ventas',r.ventas],['Ingresos',fmt('total',r.ingresos)],['Productos con stock bajo',r.stockBajo]].map(([a,b])=>`<div class="stat"><b>${b}</b>${a}</div>`).join('')+'</div>'}
+  catch(e){$('#vista').innerHTML=`<div class="err">${esc(e.message)} <button class="btn s" onclick="abrir('inicio')">Reintentar</button></div>`}}
+async function cargar(){const t=$('#tabla');if(!t||!V.c)return;const v=V;if(!rows.length)t.innerHTML='<div class="empty"><span class="spin"></span> Cargando…</div>';
+  const p={q:$('#q')?.value,sort:sort.k,dir:sort.dir,categoria:$('#fcat')?.value,bajo:$('#fbajo')?.checked?1:'',desde:$('#fd')?.value,hasta:$('#fh')?.value};
+  try{const r=await v.c.todos(p);if(v!==V)return;rows=r;pintar()}
+  catch(e){if(v!==V)return;rows=[];t.innerHTML=`<div class="err">${esc(e.message)} <button class="btn s" id="retry">Reintentar</button></div>`;$('#retry').onclick=cargar}}
+function pintar(){const cols=V.c.cols;if(!rows.length)return $('#tabla').innerHTML='<div class="empty">No hay registros.</div>';
+  $('#tabla').innerHTML=`<table><thead><tr>${cols.map(([k,l])=>`<th data-k="${k}">${l}${sort.k===k?(sort.dir==='asc'?' ▲':' ▼'):''}</th>`).join('')}${V.ro?'':'<th class="noprint"></th>'}</tr></thead><tbody>
+  ${rows.map(r=>`<tr>${cols.map(([k])=>`<td>${fmt(k,r[k])}</td>`).join('')}${V.ro?'':`<td class="acc">${V.k==='ventas'?`<button class="btn s g" data-a="det" data-i="${r.id}">Detalle</button>`:''}<button class="btn s g" data-a="ed" data-i="${r.id}">Editar</button><button class="btn s r" data-a="del" data-i="${r.id}">Eliminar</button></td>`}</tr>`).join('')}</tbody></table>`;
+  $('#tabla thead').onclick=e=>{const k=e.target.dataset?.k;if(!k)return;sort={k,dir:sort.k===k&&sort.dir==='asc'?'desc':'asc'};cargar()};
+  $('#tabla tbody').onclick=async e=>{const b=e.target.closest('button');if(!b)return;const o=rows.find(r=>r.id==b.dataset.i);
+    if(b.dataset.a==='ed')formulario(o);if(b.dataset.a==='det')detalle(o);
+    if(b.dataset.a==='del'&&confirm('¿Eliminar este registro?')){try{await o.eliminar();toast('Registro eliminado.');cargar()}catch(er){toast(er.message,false)}}}}
+function csv(){const cols=V.c.cols,q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const t=[cols.map(c=>q(c[1])).join(','),...rows.map(r=>cols.map(([k])=>q(r[k])).join(','))].join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+t],{type:'text/csv'}));a.download=V.k+'.csv';a.click()}
+function modal(h){const d=$('#dlg');d.innerHTML=h;d.showModal();return d}
+async function formulario(o){const C=V.c,ev=C===Venta,nuevo=!o;o=o||new C();let ops={},prods=[];
+  try{for(const c of C.campos)if(c.src)ops[c.n]=(await api('GET',{e:c.src})).map(r=>[r[c.n],typeof c.txt==='function'?c.txt(r):r[c.txt]]);if(ev&&nuevo)prods=await Producto.todos()}catch(e){return toast(e.message,false)}
+  const campo=c=>`<label>${c.l}${c.r?' *':''}${c.src?`<select name="${c.n}">${ops[c.n].map(([v,t])=>`<option value="${v}" ${o[c.n]==v?'selected':''}>${esc(t)}</option>`).join('')}</select>`:`<input name="${c.n}" type="${c.t}" ${c.t==='number'?'step="any" min="0"':''} value="${esc(o[c.n]??'')}">`}</label>`;
+  const d=modal(`<form id="f"><h3>${nuevo?'Nuevo':'Editar'} ${V.t.replace(/s$/,'').toLowerCase()}</h3>${C.campos.map(campo).join('')}
+  ${ev&&nuevo?'<div><b>Productos</b><div id="lineas"></div><button type="button" class="btn s g" id="addl">+ Producto</button><p><b id="tot"></b></p></div>':''}
+  <p class="msg" id="fm"></p><div class="row"><button type="button" class="btn g" id="cn">Cancelar</button><button class="btn" id="sv">Guardar</button></div></form>`);
+  let sels=[];const total=()=>{$('#tot').textContent='Total: '+fmt('total',sels.reduce((s,[a,b])=>s+(prods.find(p=>p.id==a.value)?.precio||0)*(+b.value||0),0))};
+  if(ev&&nuevo){$('#addl').onclick=()=>{const div=document.createElement('div');div.className='linea';
+    div.innerHTML=`<select>${prods.map(p=>`<option value="${p.idProducto}">${esc(p.nombre)} (${esc(p.talla)}) · stock ${p.stock}</option>`).join('')}</select><input type="number" min="1" value="1"><button type="button" class="btn s r">✕</button>`;
+    const par=[div.children[0],div.children[1]];sels.push(par);$('#lineas').append(div);div.oninput=total;
+    div.querySelector('button').onclick=()=>{sels=sels.filter(x=>x!==par);div.remove();total()};total()};$('#addl').click()}
+  $('#cn').onclick=()=>d.close();
+  $('#f').onsubmit=async e=>{e.preventDefault();const fd=new FormData($('#f')),x=nuevo?new C():o;for(const c of C.campos)x[c.n]=fd.get(c.n);
+    if(ev&&nuevo)x.lineas=[];try{if(ev&&nuevo)sels.forEach(([a,b])=>x.agregarLinea(prods.find(p=>p.id==a.value),+b.value))}catch(er){return $('#fm').textContent=er.message}
+    const errs=x.validar();if(errs.length)return $('#fm').textContent=errs.join(' ');$('#sv').disabled=true;
+    try{await x.guardar();d.close();toast(nuevo?'Registro guardado.':'Cambios guardados.');cargar()}catch(er){$('#fm').textContent=er.message}finally{$('#sv').disabled=false}}}
+async function detalle(v){try{const ds=(await api('GET',{e:'ventas',id:v.id,det:1})).map(r=>new DetalleVenta(r));
+  const d=modal(`<h3>Venta #${v.id}</h3><div class="wrap"><table><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Subtotal</th></tr>${ds.map(l=>`<tr><td>${esc(l.producto)}</td><td>${l.cantidad}</td><td>${fmt('precio',l.precioUnitario)}</td><td>${fmt('subtotal',l.subtotal)}</td></tr>`).join('')}</table></div><div class="row" style="margin-top:12px"><button class="btn" id="cl">Cerrar</button></div>`);
+  $('#cl').onclick=()=>d.close()}catch(e){toast(e.message,false)}}
+// Actualización automática: cada 10 s relee la vista abierta (pausa si la pestaña está oculta o hay un formulario abierto)
+setInterval(()=>{if(!document.hidden&&V&&V.c&&!$('#dlg').open&&!$('#app').hidden)cargar()},10000);
+init();
+</script></body></html>
